@@ -21,6 +21,10 @@
             opacity: 0.5;
         }
 
+        .lead {
+            font-size: 24px;
+        }
+
         /* Override Bootstrap */
         .row .col-sm-12 .row {
             margin-right: 0;
@@ -33,11 +37,8 @@
             margin: 0;
         }
 
-        .panel.alert-dismissible {
-            padding-right: 0;
-        }
-
-        .alert-dismissible .close {
+        .panel .close {
+            position: relative;
             top: 10px;
             right: 12px;
         }
@@ -49,7 +50,6 @@
             <h1>xml<span>to</span>jsdoc</h1>
             <p>Convert XML-style code comments to the JSDoc format</p>
         </header>
-        <p class="lead text-center">Drag and drop JS or HTML files</p>
         <div class="row">
             <div class="col-sm-12 col-md-4">
                 <div class="row">
@@ -70,6 +70,7 @@
                 <h3>Results</h3>
                 <div class="output"></div>
             </div>
+            <p class="lead text-center">Drag and drop JS or HTML files</p>
         </div>
         <div class="row hidden">
             <p>Errors:</p>
@@ -78,8 +79,6 @@
     </div>
 
     <script src="xmltojsdoc.js"></script>
-    <script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
     <script>
         // Simple converter GUI
         (function () {
@@ -98,9 +97,13 @@
                 evt.stopPropagation();
                 evt.preventDefault();
 
-                var files = evt.dataTransfer.files; // FileList object.
+                var files = evt.dataTransfer.files; // FileList object
                 var i;
                 var f;
+
+                if (files.length) {
+                    document.querySelector('.lead').classList.add('fade');
+                }
 
                 for (i = 0; f = files[i]; i++) {
                     // Only process JS-containing files files
@@ -111,9 +114,9 @@
 
                     reader = new FileReader();
 
-                    // Closure to capture the file information.
-                    reader.onload = (function(theFile) {
-                        return function(e) {
+                    // Closure to capture the file information
+                    reader.onload = (function (theFile) {
+                        return function (e) {
                             parseCommentsFromFile(e.target.result, theFile.name);
                         };
                     })(f);
@@ -131,27 +134,46 @@
 
             // Parses a file and picks out the comment blocks
             function parseCommentsFromFile(str, fileName) {
+                var lines = str.split('\n');
                 var currentBlock = [];
+                var beginLine = 0;
+                var endLine = 0;
+                var addToQueue = function _addToQueue() {
+                    // Add to list of comments
+                    outputQueue.push({
+                        name: fileName + ' (lines ' + beginLine + '-' + endLine + ')',
+                        content: currentBlock.join('\n')
+                    });
+                };
 
-                str.split('\n').forEach(function (line) {
+                lines.forEach(function (line, i) {
                     line = line.trim();
 
                     // We're in a comment block
                     if (/^\/\/\//.test(line)) {
                         currentBlock.push(line);
+
+                        if (beginLine === 0) {
+                            beginLine = i + 1;
+                        }
                     }
                     // Previous block has finished
                     else if (currentBlock.length) {
-                        // Add to list of comments
-                        outputQueue.push({
-                            name: fileName,
-                            content: currentBlock.join('\n')
-                        });
+                        endLine = i;
+                        addToQueue();
 
                         // Reset so we can build the next block
                         currentBlock = [];
+                        beginLine = 0;
+                        endLine = 0;
                     }
                 });
+
+                // Check if we were still within a comment at the last line
+                if (currentBlock.length) {
+                    endLine = lines.length;
+                    addToQueue();
+                }
 
                 processQueue();
             }
@@ -163,22 +185,36 @@
                 outputQueue.forEach(function (block) {
                     var panel = document.createElement('div');
                     var heading = document.createElement('div');
-                    // var body = document.createElement('div');
+                    var button = document.createElement('button');
+                    var pre = document.createElement('pre');
 
-                    panel.className = 'panel panel-success alert-dismissible';
-                    panel.setAttribute('role', 'alert');
-                    panel.innerHTML = '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>';
+                    panel.className = 'panel panel-success';
+
+                    button.setAttribute('type', 'button');
+                    button.className = 'close';
+                    button.setAttribute('aria-label', 'Close');
+                    button.innerHTML = '<span aria-hidden="true">&times;</span>';
 
                     heading.className = 'panel-heading'
                     heading.innerHTML = block.name;
+
+                    pre.innerHTML = encodeHTML(convert(block.content));
+
+                    panel.appendChild(button);
                     panel.appendChild(heading);
-
-                    // body.className = 'panel-body';
-                    panel.innerHTML += '<pre>' + encodeHTML(convert(block.content)) + '</pre>';
-
-                    // panel.appendChild(body);
+                    panel.appendChild(pre);
 
                     output.appendChild(panel);
+
+                    button.addEventListener('click', function (evt) {
+                        var parent = evt.target.parentNode;
+
+                        while (parent && parent.nodeName !== 'body' && !parent.classList.contains('panel')) {
+                            parent = parent.parentNode;
+                        }
+
+                        parent.parentNode.removeChild(parent);
+                    }, true);
                 });
 
                 output.parentNode.classList.remove('invisible');
