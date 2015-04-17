@@ -1,92 +1,99 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <title>xmltojsdoc &mdash; XML Comment to JSDoc Converter</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet" type="text/css">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet" type="text/css">
     <style>
         html {
             height: 100%;
         }
 
         body {
-            padding: 1em;
-            margin: 0;
+            font: 16px/1.4 "Open Sans", "Segoe UI", "Helvetica Neue", sans-serif;
             width: 100%;
             min-height: 100%;
         }
 
-        *,
-        *:before,
-        *:after {
-            box-sizing: border-box;
+        h1 span {
+            opacity: 0.5;
         }
 
-        output {
-            display: block;
-            border: 1px solid #444;
-            padding: 0.5em;
-            font-size: 10px;
+        /* Override Bootstrap */
+        .row .col-sm-12 .row {
+            margin-right: 0;
+            margin-left: 0;
+        }
+
+        .panel pre {
             font-family: Menlo, Consolas, monospace;
-            white-space: pre;
+            border: none;
+            margin: 0;
         }
 
-        .left,
-        .right {
-            float: left;
-            width: 50%;
+        .panel.alert-dismissible {
+            padding-right: 0;
         }
 
-        label {
-            display: block;
+        .alert-dismissible .close {
+            top: 10px;
+            right: 12px;
         }
     </style>
 </head>
 <body>
-    <h1>xmltojsdoc</h1>
-    <h2>Convert XML-style code comments to the JSDoc format</h2>
-    <p>Drag and drop JS or HTML files onto this page or paste source code below.</p>
-    <div class="left">
-        <label for="input">Input:</label>
-        <textarea rows="12" cols="100" name="input" id="input" tabindex="1"></textarea>
-    </div>
-    <div class="right">
-        <label for="output">Output:</label>
-        <output id="output" tabindex="0"></output>
-    </div>
-    <div style="display: none;">
-        <p>Errors:</p>
-        <p id="errorOutput"></p>
+    <div class="container-fluid">
+        <header class="text-center">
+            <h1>xml<span>to</span>jsdoc</h1>
+            <p>Convert XML-style code comments to the JSDoc format</p>
+        </header>
+        <p class="lead text-center">Drag and drop JS or HTML files</p>
+        <div class="row">
+            <div class="col-sm-12 col-md-4">
+                <div class="row">
+                    <div class="form-group">
+                        <label for="input">Or paste source code:</label>
+                        <textarea class="form-control" name="input" id="input" tabindex="1"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <button type="button" class="btn btn-default convertInput">Convert</button>
+                    </div>
+                </div>
+                <div class="row hidden">
+                    <p>Errors:</p>
+                    <p id="errorOutput"></p>
+                </div>
+            </div>
+            <div class="col-sm-12 col-md-8 invisible">
+                <h3>Results</h3>
+                <div class="output"></div>
+            </div>
+        </div>
+        <div class="row hidden">
+            <p>Errors:</p>
+            <p id="errorOutput"></p>
+        </div>
     </div>
 
     <script src="xmltojsdoc.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
     <script>
         // Simple converter GUI
         (function () {
             var input = document.getElementById('input');
-            var output = document.getElementById('output');
+            var output = document.querySelector('.output');
             var errorOutput = document.getElementById('errorOutput');
+            var convertButton = document.querySelector('.convertInput');
             var outputQueue = [];
 
-            input.addEventListener('change', processTextarea, false);
-            input.addEventListener('keyup', processTextarea, false);
-
             function processTextarea() {
-                var result = '';
-
-                try {
-                    result = xmltojsdoc.convert(input.value.trim());
-                    errorOutput.parentNode.style.display = 'none';
-                }
-                catch (e) {
-                    errorOutput.innerHTML = e.message;
-                    errorOutput.parentNode.style.display = 'block';
-                }
-
-                output.innerHTML = result;
+                parseCommentsFromFile(input.value.trim(), '<small><em>Manual entry</em></small>');
             }
 
-            // File converter
-
+            // File reader
             function handleFileSelect(evt) {
                 evt.stopPropagation();
                 evt.preventDefault();
@@ -107,40 +114,23 @@
                     // Closure to capture the file information.
                     reader.onload = (function(theFile) {
                         return function(e) {
-                            parseCommentsFromFile(e.target.result);
+                            parseCommentsFromFile(e.target.result, theFile.name);
                         };
                     })(f);
 
                     // Read in the file as text
                     reader.readAsText(f);
                 }
-
-                // // files is a FileList of File objects. List some properties.
-                // var out = [];
-
-                // for (var i = 0, f; f = files[i]; i++) {
-                //     out.push('<li><strong>', escape(f.name), '</strong> (', f.type || 'n/a', ') - ',
-                //                 f.size, ' bytes, last modified: ',
-                //                 f.lastModifiedDate ? f.lastModifiedDate.toLocaleDateString() : 'n/a',
-                //                 '</li>');
-                // }
-
-                // output.innerHTML = '<ul>' + out.join('') + '</ul>';
             }
 
             function handleDragOver(evt) {
                 evt.stopPropagation();
                 evt.preventDefault();
-                evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
+                evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy
             }
 
-            // Drag-and-drop event listeners
-            document.body.addEventListener('dragover', handleDragOver, false);
-            document.body.addEventListener('drop', handleFileSelect, false);
-
             // Parses a file and picks out the comment blocks
-            function parseCommentsFromFile(str) {
-                var blocks = [];
+            function parseCommentsFromFile(str, fileName) {
                 var currentBlock = [];
 
                 str.split('\n').forEach(function (line) {
@@ -153,7 +143,10 @@
                     // Previous block has finished
                     else if (currentBlock.length) {
                         // Add to list of comments
-                        outputQueue.push(currentBlock.join('\n'));
+                        outputQueue.push({
+                            name: fileName,
+                            content: currentBlock.join('\n')
+                        });
 
                         // Reset so we can build the next block
                         currentBlock = [];
@@ -163,26 +156,61 @@
                 processQueue();
             }
 
+            /**
+             * Print all output to the page
+            */
             function processQueue() {
                 outputQueue.forEach(function (block) {
-                    output.innerHTML += process(block) + '\n\n\n';
+                    var panel = document.createElement('div');
+                    var heading = document.createElement('div');
+                    // var body = document.createElement('div');
+
+                    panel.className = 'panel panel-success alert-dismissible';
+                    panel.setAttribute('role', 'alert');
+                    panel.innerHTML = '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>';
+
+                    heading.className = 'panel-heading'
+                    heading.innerHTML = block.name;
+                    panel.appendChild(heading);
+
+                    // body.className = 'panel-body';
+                    panel.innerHTML += '<pre>' + encodeHTML(convert(block.content)) + '</pre>';
+
+                    // panel.appendChild(body);
+
+                    output.appendChild(panel);
                 });
+
+                output.parentNode.classList.remove('invisible');
             }
 
-            function process(str) {
+            function convert(str) {
                 var result = '';
 
                 try {
                     result = xmltojsdoc.convert(str);
-                    errorOutput.parentNode.style.display = 'none';
+                    errorOutput.parentNode.classList.add('hidden');
                 }
                 catch (e) {
                     errorOutput.innerHTML = e.message;
-                    errorOutput.parentNode.style.display = 'block';
+                    errorOutput.parentNode.classList.remove('hidden');
                 }
 
                 return result;
             }
+
+            function encodeHTML(str) {
+                return str
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;');
+            }
+
+            // Source code event handler
+            convertButton.addEventListener('click', processTextarea, false);
+
+            // Drag-and-drop event listeners
+            document.body.addEventListener('dragover', handleDragOver, false);
+            document.body.addEventListener('drop', handleFileSelect, false);
         }());
     </script>
 </body>
