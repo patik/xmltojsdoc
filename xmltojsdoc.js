@@ -17,38 +17,7 @@
         return [].slice.call(node.getElementsByTagName(selector));
     };
 
-    // Look for a native XML parser
-
-    // Browser environment
-    if (typeof window === 'object') {
-        // Get browser's native XML parser
-        if (typeof window.DOMParser !== 'undefined') {
-            xmlParser = function (xmlStr) {
-                return ( new window.DOMParser() ).parseFromString(xmlStr, 'text/xml');
-            };
-        }
-        else if (typeof window.ActiveXObject !== 'undefined' && new window.ActiveXObject('Microsoft.XMLDOM')) {
-            xmlParser = function (xmlStr) {
-                var xmlDoc = new window.ActiveXObject('Microsoft.XMLDOM');
-
-                xmlDoc.async = 'false';
-                xmlDoc.loadXML(xmlStr);
-
-                return xmlDoc;
-            };
-        }
-    }
-    // Node/IO
-    else if (typeof require === 'function') {
-        //TODO: Import a Node module
-        xmlParser = require('xxxxxxxx');
-    }
-
-    if (!xmlParser) {
-        throw new Error('No XML parser found');
-    }
-
-    var parse = function _parse(source) {
+    var convert = function _parse(source) {
         var xml = '<comment>\n';
         var descs = [];
         var remarks = [];
@@ -221,7 +190,34 @@
         return comment;
     };
 
+    // Look for a native XML parser
+
+    // Browser environment
+    if (typeof window === 'object') {
+        // Get browser's native XML parser
+        if (typeof window.DOMParser !== 'undefined') {
+            xmlParser = function (xmlStr) {
+                return ( new window.DOMParser() ).parseFromString(xmlStr, 'text/xml');
+            };
+        }
+        else if (typeof window.ActiveXObject !== 'undefined' && new window.ActiveXObject('Microsoft.XMLDOM')) {
+            xmlParser = function (xmlStr) {
+                var xmlDoc = new window.ActiveXObject('Microsoft.XMLDOM');
+
+                xmlDoc.async = 'false';
+                xmlDoc.loadXML(xmlStr);
+
+                return xmlDoc;
+            };
+        }
+    }
+
+    if (!xmlParser) {
+        throw new Error('No XML parser found');
+    }
+
+    // Parse the comment
     return {
-        parse: parse
-    };
+        convert: convert
+    }
 }));
