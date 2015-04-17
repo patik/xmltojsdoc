@@ -102,7 +102,7 @@
                 var f;
 
                 if (files.length) {
-                    document.querySelector('.lead').classList.add('fade');
+                    clearLead();
                 }
 
                 for (i = 0; f = files[i]; i++) {
@@ -239,6 +239,18 @@
                 return str
                         .replace(/</g, '&lt;')
                         .replace(/>/g, '&gt;');
+            }
+
+            function clearLead() {
+                var lead = document.querySelector('.lead');
+
+                // Fade out
+                lead.classList.add('fade');
+
+                // Delete after the fade animation has finished, otherwise it covers the whole results area
+                setTimeout(function() {
+                    lead.parentNode.removeChild(lead);
+                }, 200);
             }
 
             // Source code event handler
