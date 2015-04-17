@@ -1,2 +1,3 @@
 # xmltojsdoc
-Convert XML comments to the JSDoc format
+
+Convert XML code comments to the JSDoc format
