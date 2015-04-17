@@ -1,0 +1,25 @@
+{
+    "name": "xmltojsdoc",
+    "version": "0.0.1",
+    "description": "Convert XML code comments to the JSDoc format",
+    "main": "xmltojsdoc.js",
+    "author": "Craig Patik <craig@patik.com> (http://patik.com)",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/patik/xmltojsdoc.git"
+    },
+    "keywords": [
+        "comment",
+        "jsdoc",
+        "xml",
+        "convert"
+    ],
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/patik/xmltojsdoc/issues"
+    },
+    "homepage": "https://github.com/patik/xmltojsdoc"
+}
