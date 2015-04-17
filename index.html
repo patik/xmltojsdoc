@@ -4,60 +4,77 @@
     <meta charset="utf-8">
     <title>xmltojsdoc &mdash; XML Comment to JSDoc Converter</title>
     <style>
-        html { height: 100%; }
-        body { padding: 1em; width: 100%; min-height: 100%; }
+        html {
+            height: 100%;
+        }
+
+        body {
+            padding: 1em;
+            margin: 0;
+            width: 100%;
+            min-height: 100%;
+        }
+
+        *,
+        *:before,
+        *:after {
+            box-sizing: border-box;
+        }
+
+        output {
+            display: block;
+            border: 1px solid #444;
+            padding: 0.5em;
+            font-size: 10px;
+            font-family: Menlo, Consolas, monospace;
+            white-space: pre;
+        }
+
+        .left,
+        .right {
+            float: left;
+            width: 50%;
+        }
+
+        label {
+            display: block;
+        }
     </style>
 </head>
 <body>
     <h1>xmltojsdoc</h1>
     <h2>Convert XML-style code comments to the JSDoc format</h2>
-    <div>
+    <p>Drag and drop JS or HTML files onto this page or paste source code below.</p>
+    <div class="left">
         <label for="input">Input:</label>
-        <textarea rows="8" cols="100" name="input" id="input"></textarea>
+        <textarea rows="12" cols="100" name="input" id="input" tabindex="1"></textarea>
     </div>
-    <div>
+    <div class="right">
         <label for="output">Output:</label>
-        <textarea rows="8" cols="100" name="output" id="output" readonly></textarea>
+        <output id="output" tabindex="0"></output>
     </div>
     <div style="display: none;">
         <p>Errors:</p>
         <p id="errorOutput"></p>
     </div>
-<!--
-
-Example:
-
-///<summary>Adds event listeners to a particular tooltip</summary>
-///<param name="tooltipElem" type="DOM Element">div.tooltip</param>
-///<param name="aLinks" type="Array">Links within the tooltip (Optional; they're often already known)</param>
-///<returns>The target element</returns>
-///<remark>If no target is specified in the settings, the invokerElem will be considered the target</remark>
-
-/**
- * Adds event listeners to a particular tooltip
- * @param   {Element}  tooltipElem  The div.tooltip
- * @param   {Array}    aLinks       Links within the tooltip (Optional; they're often already known)
- * @return  {[type]}                The target element
- */
-
--->
 
     <script src="xmltojsdoc.js"></script>
     <script>
-        // Converter GUI
+        // Simple converter GUI
         (function () {
             var input = document.getElementById('input');
             var output = document.getElementById('output');
             var errorOutput = document.getElementById('errorOutput');
+            var outputQueue = [];
 
-            input.addEventListener('change', process, false);
-            input.addEventListener('keyup', process, false);
+            input.addEventListener('change', processTextarea, false);
+            input.addEventListener('keyup', processTextarea, false);
 
-            function process() {
+            function processTextarea() {
                 var result = '';
 
                 try {
-                    result = xmltojsdoc.parse(input.value.trim());
+                    result = xmltojsdoc.convert(input.value.trim());
                     errorOutput.parentNode.style.display = 'none';
                 }
                 catch (e) {
@@ -65,7 +82,106 @@ Example:
                     errorOutput.parentNode.style.display = 'block';
                 }
 
-                output.value = result;
+                output.innerHTML = result;
+            }
+
+            // File converter
+
+            function handleFileSelect(evt) {
+                evt.stopPropagation();
+                evt.preventDefault();
+
+                var files = evt.dataTransfer.files; // FileList object.
+                var i;
+                var f;
+
+                for (i = 0; f = files[i]; i++) {
+                    // Only process JS-containing files files
+                    if (!/javascript|html/.test(f.type)) {
+                        console.error('Bad type ', f);
+                        continue;
+                    }
+
+                    reader = new FileReader();
+
+                    // Closure to capture the file information.
+                    reader.onload = (function(theFile) {
+                        return function(e) {
+                            parseCommentsFromFile(e.target.result);
+                        };
+                    })(f);
+
+                    // Read in the file as text
+                    reader.readAsText(f);
+                }
+
+                // // files is a FileList of File objects. List some properties.
+                // var out = [];
+
+                // for (var i = 0, f; f = files[i]; i++) {
+                //     out.push('<li><strong>', escape(f.name), '</strong> (', f.type || 'n/a', ') - ',
+                //                 f.size, ' bytes, last modified: ',
+                //                 f.lastModifiedDate ? f.lastModifiedDate.toLocaleDateString() : 'n/a',
+                //                 '</li>');
+                // }
+
+                // output.innerHTML = '<ul>' + out.join('') + '</ul>';
+            }
+
+            function handleDragOver(evt) {
+                evt.stopPropagation();
+                evt.preventDefault();
+                evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
+            }
+
+            // Drag-and-drop event listeners
+            document.body.addEventListener('dragover', handleDragOver, false);
+            document.body.addEventListener('drop', handleFileSelect, false);
+
+            // Parses a file and picks out the comment blocks
+            function parseCommentsFromFile(str) {
+                var blocks = [];
+                var currentBlock = [];
+
+                str.split('\n').forEach(function (line) {
+                    line = line.trim();
+
+                    // We're in a comment block
+                    if (/^\/\/\//.test(line)) {
+                        currentBlock.push(line);
+                    }
+                    // Previous block has finished
+                    else if (currentBlock.length) {
+                        // Add to list of comments
+                        outputQueue.push(currentBlock.join('\n'));
+
+                        // Reset so we can build the next block
+                        currentBlock = [];
+                    }
+                });
+
+                processQueue();
+            }
+
+            function processQueue() {
+                outputQueue.forEach(function (block) {
+                    output.innerHTML += process(block) + '\n\n\n';
+                });
+            }
+
+            function process(str) {
+                var result = '';
+
+                try {
+                    result = xmltojsdoc.convert(str);
+                    errorOutput.parentNode.style.display = 'none';
+                }
+                catch (e) {
+                    errorOutput.innerHTML = e.message;
+                    errorOutput.parentNode.style.display = 'block';
+                }
+
+                return result;
             }
         }());
     </script>
