@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>xmltojsdoc &mdash; XML Comment to JSDoc Converter</title>
+    <style>
+        html { height: 100%; }
+        body { padding: 1em; width: 100%; min-height: 100%; }
+    </style>
+</head>
+<body>
+    <h1>xmltojsdoc</h1>
+    <h2>Convert XML-style code comments to the JSDoc format</h2>
+    <div>
+        <label for="input">Input:</label>
+        <textarea rows="8" cols="100" name="input" id="input"></textarea>
+    </div>
+    <div>
+        <label for="output">Output:</label>
+        <textarea rows="8" cols="100" name="output" id="output" readonly></textarea>
+    </div>
+    <div style="display: none;">
+        <p>Errors:</p>
+        <p id="errorOutput"></p>
+    </div>
+<!--
+
+Example:
+
+///<summary>Adds event listeners to a particular tooltip</summary>
+///<param name="tooltipElem" type="DOM Element">div.tooltip</param>
+///<param name="aLinks" type="Array">Links within the tooltip (Optional; they're often already known)</param>
+///<returns>The target element</returns>
+///<remark>If no target is specified in the settings, the invokerElem will be considered the target</remark>
+
+/**
+ * Adds event listeners to a particular tooltip
+ * @param   {Element}  tooltipElem  The div.tooltip
+ * @param   {Array}    aLinks       Links within the tooltip (Optional; they're often already known)
+ * @return  {[type]}                The target element
+ */
+
+-->
+
+    <script src="xmltojsdoc.js"></script>
+    <script>
+        // Converter GUI
+        (function () {
+            var input = document.getElementById('input');
+            var output = document.getElementById('output');
+            var errorOutput = document.getElementById('errorOutput');
+
+            input.addEventListener('change', process, false);
+            input.addEventListener('keyup', process, false);
+
+            function process() {
+                var result = '';
+
+                try {
+                    result = xmltojsdoc.parse(input.value.trim());
+                    errorOutput.parentNode.style.display = 'none';
+                }
+                catch (e) {
+                    errorOutput.innerHTML = e.message;
+                    errorOutput.parentNode.style.display = 'block';
+                }
+
+                output.value = result;
+            }
+        }());
+    </script>
+</body>
+</html>
+
