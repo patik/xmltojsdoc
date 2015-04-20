@@ -243,7 +243,7 @@
                     button.setAttribute('aria-label', 'Close');
                     button.innerHTML = '<span aria-hidden="true">&times;</span>';
 
-                    heading.className = 'panel-heading'
+                    heading.className = 'panel-heading';
                     heading.innerHTML = block.name;
 
                     pre.innerHTML = encodeHTML(convert(block.content));
@@ -300,6 +300,8 @@
                 // Delete after the fade animation has finished, otherwise it covers the whole results area
                 setTimeout(function() {
                     lead.parentNode.removeChild(lead);
+
+                    // Nullify this function
                     clearLead = function() {};
                 }, 200);
 
