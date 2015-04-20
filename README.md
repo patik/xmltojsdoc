@@ -8,7 +8,7 @@ Use **xmltojsdoc** to convert [XML comments](https://msdn.microsoft.com/en-us/li
 
 Before:
 
-```js
+```
 ///<summary>Adds event listeners to a button</summary>
 ///<param name="elem" type="Element">Button element</param>
 ///<param name="options" type="Object">Optional settings</param>
@@ -18,7 +18,7 @@ Before:
 
 After:
 
-```js
+```
 /**
  * Adds event listeners to a button
  * 
