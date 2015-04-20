@@ -17,12 +17,20 @@
             min-height: 100%;
         }
 
+        h1 {
+            font-size: 44px;
+        }
+
         h1 span {
             opacity: 0.5;
         }
 
+        header p {
+            font-size: 18px;
+        }
+
         .lead {
-            font-size: 24px;
+            font-size: 28px;
         }
 
         /* Override Bootstrap */
@@ -42,23 +50,54 @@
             top: 10px;
             right: 12px;
         }
+
+        .main-section {
+            display: none;
+        }
+
+        .show-all .main-section {
+            display: block;
+        }
+
+        .hide-for-show-all {
+            margin: 3em auto;
+        }
+
+        .show-all .hide-for-show-all {
+            display: none;
+        }
+
+        .show-all .show-for-show-all {
+            display: block;
+        }
+
+        .show-all small.show-for-show-all {
+            display: inline-block;
+            margin-left: 3em;
+        }
+
+        .spacer {
+            display: inline-block;
+            width: 2.5em;
+        }
     </style>
 </head>
 <body>
     <div class="container-fluid">
         <header class="text-center">
             <h1>xml<span>to</span>jsdoc</h1>
-            <p>Convert XML-style code comments to the JSDoc format</p>
+            <p>Convert XML-style code comments from .NET or C# to the JSDoc format</p>
         </header>
-        <div class="row">
+        <div class="row main-section">
             <div class="col-sm-12 col-md-4">
                 <div class="row">
                     <div class="form-group">
-                        <label for="input">Or paste source code:</label>
+                        <label for="input">Source code:</label>
                         <textarea class="form-control" name="input" id="input" tabindex="1"></textarea>
                     </div>
                     <div class="form-group">
                         <button type="button" class="btn btn-default convertInput">Convert</button>
+                        <small class="show-for-show-all"><a role="button" class="example-button">Show an example</a></small>
                     </div>
                 </div>
                 <div class="row hidden">
@@ -70,7 +109,15 @@
                 <h3>Results</h3>
                 <div class="output"></div>
             </div>
-            <p class="lead text-center">Drag and drop JS or HTML files</p>
+        </div>
+        <div class="hide-for-show-all">
+            <div class="row">
+                <p class="lead text-center">Drag and drop JS or HTML files</p>
+                <p class="text-center"><a role="button" class="paste-button">Paste source code instead</a></p>
+            </div>
+            <div class="row">
+                <p class="text-center"><small><a role="button" class="example-button">Show an example</a></small><span class="spacer"></span><small><a href="https://github.com/patik/xmltojsdoc">View on GitHub</a></small></p>
+            </div>
         </div>
         <div class="row hidden">
             <p>Errors:</p>
@@ -245,13 +292,29 @@
             function clearLead() {
                 var lead = document.querySelector('.lead');
 
+                document.body.classList.add('show-all');
+
                 // Fade out
                 lead.classList.add('fade');
 
                 // Delete after the fade animation has finished, otherwise it covers the whole results area
                 setTimeout(function() {
                     lead.parentNode.removeChild(lead);
+                    clearLead = function() {};
                 }, 200);
+
+                input.focus();
+            }
+
+            function showExample() {
+                clearLead();
+                input.value = '///<summary>Adds event listeners to a button</summary>\n///<param name="elem" type="Element">Button element</param>\n///<param name="options" type="Object">Optional settings</param>\n///<returns>True if successful, false if unsuccessful</returns>\n///<remark>If no `elem` is specified, the first `.button` on the page will be used</remark>';
+
+                processTextarea();
+
+                if (input.clientHeight < 210) {
+                    input.style.height = '210px';
+                }
             }
 
             // Source code event handler
@@ -260,6 +323,12 @@
             // Drag-and-drop event listeners
             document.body.addEventListener('dragover', handleDragOver, false);
             document.body.addEventListener('drop', handleFileSelect, false);
+
+            document.querySelector('.paste-button').addEventListener('click', clearLead, false);
+
+            [].slice.call(document.querySelectorAll('.example-button')).forEach(function (elem) {
+                elem.addEventListener('click', showExample, false);
+            });
         }());
     </script>
 </body>
