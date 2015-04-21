@@ -13,7 +13,7 @@ Before:
 ///<param name="elem" type="Element">Button element</param>
 ///<param name="options" type="Object">Optional settings</param>
 ///<returns>True if successful, false if unsuccessful</returns>
-///<remark>If no `elem` is specified, the first `<button>` on the page will be used</remark>
+///<remark>If no `elem` is specified, the first `.button` on the page will be used</remark>
 ```
 
 After:
@@ -22,7 +22,7 @@ After:
 /**
  * Adds event listeners to a button
  * 
- * If no `elem` is specified, the first `<button>` on the page will be used
+ * If no `elem` is specified, the first `.button` on the page will be used
  * 
  * @param   {Element}   elem      Button element
  * @param   {Object}    options   Optional settings
