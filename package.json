@@ -13,8 +13,11 @@
     },
     "keywords": [
         "comment",
+        "comments",
+        "documentation",
         "jsdoc",
         "xml",
+        "javascript",
         "convert"
     ],
     "license": "ISC",
