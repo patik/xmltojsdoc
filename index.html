@@ -80,6 +80,11 @@
             display: inline-block;
             width: 2.5em;
         }
+        .textcopy{
+            height: 0px;
+            width: 0px;
+            border: none;
+        }
     </style>
 </head>
 <body>
@@ -108,6 +113,7 @@
             <div class="col-sm-12 col-md-8 invisible">
                 <h3>Results</h3>
                 <div class="output"></div>
+                <textarea class="textcopy"></textarea>
             </div>
         </div>
         <div class="hide-for-show-all">
@@ -137,7 +143,7 @@
         // Simple converter GUI
         (function () {
             var input = document.getElementById('input');
-            var output = document.querySelector('.output');
+            var output = document.querySelector('.output');            
             var errorOutput = document.getElementById('errorOutput');
             var convertButton = document.querySelector('.convertInput');
             var outputQueue = [];
@@ -275,7 +281,17 @@
                         output.insertBefore(panel,output.firstChild);
 
                         // Close button event listener
-                        button.addEventListener('click', onCloseButtonClick, false);
+                        button.addEventListener('click', onCloseButtonClick, false);                         
+                        try{
+                            var textcopy = document.querySelector('.textcopy');
+                            textcopy.textContent = encodeHTML(convert(block.content));
+                            textcopy.select();
+                            document.execCommand("copy")
+                            textcopy.setSelectionRange(0,0)                        
+                        }
+                        catch(err){
+                            
+                        }
                     }
 
                     output.parentNode.classList.remove('invisible');
