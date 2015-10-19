@@ -284,8 +284,10 @@
                         button.addEventListener('click', onCloseButtonClick, false);                         
                         try{
                             var textcopy = document.querySelector('.textcopy');
+                            textcopy.value = encodeHTML(convert(block.content));
                             textcopy.select();
                             if(document.execCommand("copy")){
+                                //textcopy.setSelectionRange(0,0)
                             }                        
                         }
                         catch(err){
@@ -373,6 +375,7 @@
                 }
             }
             function pasteProcessing(data){
+                setTimeout(processTextarea,100);
             }
 
             // Drag-and-drop event listeners
