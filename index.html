@@ -272,7 +272,7 @@
                         panel.appendChild(pre);
 
                         // Add panel to the DOM
-                        output.appendChild(panel);
+                        output.insertBefore(panel,output.firstChild);
 
                         // Close button event listener
                         button.addEventListener('click', onCloseButtonClick, false);
