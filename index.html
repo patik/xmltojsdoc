@@ -286,8 +286,9 @@
                             var textcopy = document.querySelector('.textcopy');
                             textcopy.textContent = encodeHTML(convert(block.content));
                             textcopy.select();
-                            document.execCommand("copy")
-                            textcopy.setSelectionRange(0,0)                        
+                            if(document.execCommand("copy")){
+                                textcopy.setSelectionRange(0,0)
+                            }                        
                         }
                         catch(err){
                             
