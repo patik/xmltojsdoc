@@ -76,7 +76,7 @@
         query(doc, 'param').forEach(function (elem) {
             var param = {
                     name: '[name]',
-                    type: '[type]',
+                    type: '',
                     desc: '[description]'
                 };
 
@@ -100,7 +100,7 @@
         // Collect return object
         query(doc, 'returns').forEach(function (elem) {
             var param = {
-                    type: '[type]',
+                    type: '',
                     desc: '[description]'
                 };
 

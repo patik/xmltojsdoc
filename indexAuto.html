@@ -285,10 +285,10 @@
                         button.addEventListener('click', onCloseButtonClick, false);                         
                         try{
                             var textcopy = document.querySelector('.textcopy');
-                            textcopy.textContent = encodeHTML(convert(block.content));
+                            textcopy.value = encodeHTML(convert(block.content));
                             textcopy.select();
                             if(document.execCommand("copy")){
-                                textcopy.setSelectionRange(0,0)
+                                //textcopy.setSelectionRange(0,0)
                             }                        
                         }
                         catch(err){
@@ -364,6 +364,17 @@
                     input.style.height = '210px';
                 }
             }
+            function focusProcessing() {  
+                var inp = document.getElementById('input');              
+                inp.value = "";
+                //input.select();
+                inp.focus();
+                document.execCommand("paste");
+                //processTextarea();
+                if (inp.clientHeight < 210) {
+                    inp.style.height = '210px';
+                }
+            }
             function pasteProcessing(data){
                 setTimeout(processTextarea,100);
             }
@@ -375,8 +386,9 @@
             // Event listeners for other UI buttons
 
             convertButton.addEventListener('click', processTextarea, false);
-            document.querySelector('.paste-button').addEventListener('click', clearLead, false);
             document.getElementById('input').addEventListener('paste', pasteProcessing, false);
+            document.querySelector('.paste-button').addEventListener('click', clearLead, false);
+            window.addEventListener('focus',focusProcessing,false);
             [].slice.call(document.querySelectorAll('.example-button')).forEach(function (elem) {
                 elem.addEventListener('click', showExample, false);
             });
